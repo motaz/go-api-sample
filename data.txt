@@ -1,2 +1,0 @@
-{"Phone":"122090303","Name":"Motaz","Address":"Khartoum"}
-{"Phone":"212334455","Name":"Ali","Address":"Omdurman"}
