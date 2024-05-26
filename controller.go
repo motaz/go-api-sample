@@ -1,31 +1,15 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+)
+
 type Response struct {
 	Message string
 	Success bool
-}
-
-func Add(input ordertype) (output Response) {
-	if input.Address == "" || input.Address == "" || input.Address == "" {
-		output.Message = "empty param"
-	} else {
-		err := orderAdd(input)
-		if err != nil {
-			output.Message = err.Error()
-		} else {
-			output.Success = true
-		}
-	}
-	return
-}
-
-func Remove(phone string) (output Response) {
-	if err := orderRemove(phone); err != nil {
-		output.Message = err.Error()
-	} else {
-		output.Success = true
-	}
-	return
 }
 
 type GetResponse struct {
@@ -34,13 +18,73 @@ type GetResponse struct {
 	Orders  []ordertype
 }
 
-func Get() (output GetResponse) {
-	orders, err := getOrders()
+type ordertype struct {
+	Phone   string
+	Name    string
+	Address string
+}
+
+func AddOrder(w http.ResponseWriter, r *http.Request) {
+	requestBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		output.Message = err.Error()
+		fmt.Fprintf(w, err.Error())
 	} else {
-		output.Success = true
-		output.Orders = orders
+		var request ordertype
+		err := json.Unmarshal(requestBytes, &request)
+		var response Response
+		if err == nil {
+			if request.Address == "" || request.Address == "" || request.Address == "" {
+				response.Message = "empty param"
+			} else {
+				err := orderAdd(request)
+				if err != nil {
+					response.Message = err.Error()
+				} else {
+					response.Success = true
+				}
+			}
+		} else {
+			response.Message = err.Error()
+		}
+
+		data, _ := json.Marshal(response)
+		w.Write(data)
 	}
-	return
+
+}
+
+func RemoveOrder(w http.ResponseWriter, r *http.Request) {
+	requestBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, err.Error())
+	} else {
+		phone := string(requestBytes)
+		var response Response
+		if err == nil {
+			if err := orderRemove(phone); err != nil {
+				response.Message = err.Error()
+			} else {
+				response.Success = true
+			}
+		} else {
+			response.Message = err.Error()
+		}
+
+		data, _ := json.Marshal(response)
+		w.Write(data)
+	}
+
+}
+
+func GetOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := getOrders()
+	var response GetResponse
+	if err != nil {
+		response.Message = err.Error()
+	} else {
+		response.Success = true
+		response.Orders = orders
+	}
+	data, _ := json.Marshal(response)
+	w.Write(data)
 }
