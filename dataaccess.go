@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"strings"
 )
 
 func storeOrder(Data ordertype) error {
@@ -40,11 +39,15 @@ func deleteOrder(phone string) (err error) {
 	var data []byte
 	data, err = os.ReadFile("data.txt")
 	if err == nil {
-		find := `"Phone":"` + phone + `"`
 		New := ""
-		for _, order := range strings.Split(string(data), "\n") {
-			if !strings.Contains(order, find) && order != "" {
-				New += order + "\n"
+		for _, orderBytes := range bytes.Split(data, []byte("\n")) {
+			orderString := string(orderBytes)
+			if orderString != "" {
+				var order ordertype
+				err := json.Unmarshal(orderBytes, &order)
+				if err == nil && order.Phone != phone {
+					New += orderString + "\n"
+				}
 			}
 		}
 		os.WriteFile("data.txt", []byte(New), 0)
