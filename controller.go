@@ -25,6 +25,9 @@ type ordertype struct {
 }
 
 func AddOrder(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Add("content-type", "application/json")
+
 	requestBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
@@ -36,7 +39,7 @@ func AddOrder(w http.ResponseWriter, r *http.Request) {
 			if request.Address == "" || request.Address == "" || request.Address == "" {
 				response.Message = "empty param"
 			} else {
-				err := orderAdd(request)
+				err := storeOrder(request)
 				if err != nil {
 					response.Message = err.Error()
 				} else {
@@ -54,6 +57,8 @@ func AddOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveOrder(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Add("content-type", "application/json")
 	requestBytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Fprintf(w, err.Error())
@@ -61,7 +66,7 @@ func RemoveOrder(w http.ResponseWriter, r *http.Request) {
 		phone := string(requestBytes)
 		var response Response
 		if err == nil {
-			if err := orderRemove(phone); err != nil {
+			if err := deleteOrder(phone); err != nil {
 				response.Message = err.Error()
 			} else {
 				response.Success = true
@@ -77,7 +82,10 @@ func RemoveOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetOrders(w http.ResponseWriter, r *http.Request) {
-	orders, err := getOrders()
+
+	w.Header().Add("content-type", "application/json")
+
+	orders, err := retreiveOrders()
 	var response GetResponse
 	if err != nil {
 		response.Message = err.Error()
@@ -87,4 +95,12 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	data, _ := json.Marshal(response)
 	w.Write(data)
+}
+
+func About(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Add("content-type", "text/plain")
+	fmt.Fprint(w, "Go API sample\n")
+	fmt.Fprint(w, "methods:  /addorder, /getorders, /removeorder")
+
 }

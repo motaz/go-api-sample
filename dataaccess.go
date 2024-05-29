@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-func orderAdd(Data ordertype) error {
+func storeOrder(Data ordertype) error {
+
 	bytes, _ := json.Marshal(Data)
 	f, err := os.OpenFile("data.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err == nil {
@@ -18,7 +19,8 @@ func orderAdd(Data ordertype) error {
 	return err
 }
 
-func getOrders() (orders []ordertype, err error) {
+func retreiveOrders() (orders []ordertype, err error) {
+
 	var data []byte
 	data, err = os.ReadFile("data.txt")
 	if err == nil {
@@ -33,7 +35,8 @@ func getOrders() (orders []ordertype, err error) {
 	return
 }
 
-func orderRemove(phone string) (err error) {
+func deleteOrder(phone string) (err error) {
+
 	var data []byte
 	data, err = os.ReadFile("data.txt")
 	if err == nil {
